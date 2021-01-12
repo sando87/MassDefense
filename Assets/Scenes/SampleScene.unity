@@ -281,11 +281,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 370765886}
-  - component: {fileID: 370765885}
-  - component: {fileID: 370765887}
   - component: {fileID: 370765889}
+  - component: {fileID: 370765887}
   - component: {fileID: 370765888}
+  - component: {fileID: 370765885}
   - component: {fileID: 370765890}
+  - component: {fileID: 370765891}
   m_Layer: 0
   m_Name: Unit
   m_TagString: Untagged
@@ -461,7 +462,23 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  DetectRadius: 1
+--- !u!114 &370765891
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 370765884}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 893c6ed795b7c074c828f31fc98ad9e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  TotalHP: 100
+  AttackPoint: 5
+  AttackSpeed: 1
+  MoveSpeed: 2
+  AttackRange: 1
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0

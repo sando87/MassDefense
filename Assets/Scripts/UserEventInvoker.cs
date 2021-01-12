@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class UserEventInvoker : MonoBehaviour
 {
-    public const float DragDetectCoefficient = 0.1f;
-
     private GameObject mDownObject = null;
     private Vector3 mDownPosition = Vector3.zero;
     private bool mIsDragged = false;
@@ -68,7 +66,7 @@ public class UserEventInvoker : MonoBehaviour
             {
                 //Drag 여부를 감지만 한다.
                 Vector3 curWorldPt = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                if ((curWorldPt - mDownPosition).magnitude >= DragDetectCoefficient)
+                if ((curWorldPt - mDownPosition).magnitude >= SystemConfig.DragDetectCoefficient)
                 {
                     mIsDragged = true;
                 }

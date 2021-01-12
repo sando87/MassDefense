@@ -4,10 +4,12 @@ using UnityEngine;
 
 public class Unit : MonoBehaviour
 {
+    public Property Property { get; private set; }
+
     // Start is called before the first frame update
     void Start()
     {
-        
+        Property = GetComponent<Property>();
     }
 
     // Update is called once per frame
@@ -29,7 +31,11 @@ public class Unit : MonoBehaviour
 
     private IEnumerator MoveTo(Vector3 dest)
     {
-        float moveSpeed = 1.0f;
+        StopAllCoroutines();
+        IsReadyToAttack = false;
+        DetectEnable = false;
+
+        float moveSpeed = Property.MoveSpeed;
         dest.z = dest.y * 0.1f; //y좌표가 높을수록 해당 객체는 뒤쪽에 그려져야 하므로...
         Vector3 dir = dest - transform.position;
         float distance = dir.magnitude;
@@ -42,31 +48,57 @@ public class Unit : MonoBehaviour
             time += Time.deltaTime;
             yield return null;
         }
+
+        IsReadyToAttack = true;
+        DetectEnable = true;
     }
 
 
-    public void OnDetectEvent(Collider[] colliders)
+    public void OnDetectEvent(Collider2D[] colliders)
     {
         if(IsReadyToAttack)
         {
-            HealthBar hp = colliders[0].gameObject.GetComponent<HealthBar>();
-            if(hp != null)
-                StartCoroutine(Attack(hp));
+            foreach(Collider2D col in colliders)
+            {
+                Property ppt = col.GetComponent<Property>();
+                if (ppt.IsEnemy(Property))
+                {
+                    HealthBar hp = colliders[0].gameObject.GetComponent<HealthBar>();
+                    if (hp != null)
+                    {
+                        StartCoroutine(Attack(hp));
+                        break;
+                    }
+                }
+            }
         }
+    }
+
+    public bool DetectEnable
+    {
+        get { return GetComponent<AroundDetector>().enabled; }
+        set { GetComponent<AroundDetector>().enabled = value; }
     }
 
     public bool IsReadyToAttack { get; private set; } = true;
     private IEnumerator Attack(HealthBar enemy)
     {
         IsReadyToAttack = false;
+        DetectEnable = false;
+        Unit enemyUnit = enemy.GetComponent<Unit>();
 
-        //Play Animation Attack
-        //Play Attack Sound
-        //Create Attack Particle
-        enemy.CurrentHP -= 3.0f;
+        while(!enemyUnit.IsDeath)
+        {
+            //Play Animation Attack
+            //Play Attack Sound
+            //Create Attack Particle
+            enemy.GetDamaged(Property.AttackPoint);
 
-        yield return new WaitForSeconds(1.0f);
+            yield return new WaitForSeconds(1 / Property.AttackSpeed);
+
+        }
         IsReadyToAttack = true;
+        DetectEnable = true;
     }
 
 
@@ -79,8 +111,8 @@ public class Unit : MonoBehaviour
         IsDeath = true;
         StopAllCoroutines();
         GetComponent<BoxCollider2D>().enabled = false;
-        GetComponent<DetectEvent>().enabled = false;
         GetComponent<UserEvent>().enabled = false;
+        DetectEnable = false;
         //Play Animation Death
         //Play Death Sound
         Destroy(gameObject, 3.0f);

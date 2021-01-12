@@ -4,28 +4,32 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class DetectEvent : MonoBehaviour
+public class AroundDetector : MonoBehaviour
 {
-
     [Serializable]
-    public class UnityEventDetect : UnityEvent<Collider[]> { }
+    public class UnityEventDetect : UnityEvent<Collider2D[]> { }
     public UnityEventDetect EventDetect = null;
 
-    public float DetectRadius = 1;
+    private Property mProperty = null;
+
+    private void Start()
+    {
+        mProperty = GetComponent<Property>();
+    }
 
     // Update is called once per frame
     void Update()
     {
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, DetectRadius);
+        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, mProperty.AttackRange);
         if(hitColliders.Length > 1)
         {
-            List<Collider> list = new List<Collider>();
+            List<Collider2D> list = new List<Collider2D>();
             foreach (var hitCollider in hitColliders)
             {
                 if (hitCollider.gameObject != gameObject)
                     list.Add(hitCollider);
             }
-            Collider[] rets = list.ToArray();
+            Collider2D[] rets = list.ToArray();
             EventDetect?.Invoke(rets);
         }
     }
