@@ -11,3 +11,20 @@ public enum PlayerType
 {
     None, Human, Computer, Neutral
 }
+
+public enum FSMState
+{
+    None, Idle, Move, MoveToAttack, Chase, Attack, Stun, Appear, Death
+}
+
+public enum FSMCmd
+{
+    None, Enter, Update, Leave
+}
+
+
+public class FSMInfo
+{
+    public Vector3 DestinationPos;
+    public GameObject AttackTarget;
+}

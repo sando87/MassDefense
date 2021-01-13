@@ -1,15 +1,17 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Unit : MonoBehaviour
 {
-    public Property Property { get; private set; }
+    private float mLastAttackTime = 0;
+    public Stats Stats { get; private set; }
 
     // Start is called before the first frame update
     void Start()
     {
-        Property = GetComponent<Property>();
+        Stats = GetComponent<Stats>();
     }
 
     // Update is called once per frame
@@ -20,101 +22,172 @@ public class Unit : MonoBehaviour
 
     public void OnClick()
     {
-        // Open Functions..(On GUI)
-        Debug.Log("OnClick");
+        Debug.Log("OnClick : Show GUI");
     }
     public void OnDragDrop(Vector3 worldPos)
     {
-        StopCoroutine("MoveTo");
-        StartCoroutine("MoveTo", worldPos);
+        FSM fsm = GetComponent<FSM>();
+        fsm.Param.DestinationPos = worldPos;
+        fsm.ChangeState(FSMState.Move);
+    }
+
+    public void OnDetectEvent(Collider2D[] colliders)
+    {
+        foreach (Collider2D col in colliders)
+        {
+            Stats ppt = col.GetComponent<Stats>();
+            if (ppt != null && Stats.IsEnemy(ppt))
+            {
+                FSM fsm = GetComponent<FSM>();
+                fsm.Param.AttackTarget = col.gameObject;
+                fsm.ChangeState(FSMState.Attack);
+                break;
+            }
+        }
+    }
+
+    public void OnFSM(FSMCmd cmd, FSMState state)
+    {
+        switch(state)
+        {
+            case FSMState.Idle: DoFSMIdle(cmd); break;
+            case FSMState.Move: DoFSMMove(cmd); break;
+            case FSMState.Attack: DoFSMAttack(cmd); break;
+            case FSMState.Death: DoFSMDeath(cmd); break;
+            case FSMState.Appear: DoFSMAppear(cmd); break;
+            default: Debug.Log("Undefined OnFSM State"); break;
+        }
+    }
+
+    private void DoFSMIdle(FSMCmd cmd)
+    {
+        if (cmd == FSMCmd.Enter)
+        {
+            GetComponent<AroundDetector>().enabled = true;
+            GetComponent<UserEvent>().enabled = true;
+        }
+        else if (cmd == FSMCmd.Update)
+        {
+        }
+        else if (cmd == FSMCmd.Leave)
+        {
+        }
+    }
+    private void DoFSMMove(FSMCmd cmd)
+    {
+        if (cmd == FSMCmd.Enter)
+        {
+            GetComponent<AroundDetector>().enabled = false;
+            StartCoroutine("MoveTo", GetComponent<FSM>().Param.DestinationPos);
+        }
+        else if (cmd == FSMCmd.Update)
+        {
+        }
+        else if (cmd == FSMCmd.Leave)
+        {
+            StopCoroutine("MoveTo");
+        }
+    }
+    private void DoFSMAttack(FSMCmd cmd)
+    {
+        if (cmd == FSMCmd.Enter)
+        {
+            GetComponent<AroundDetector>().enabled = false;
+            StartCoroutine("Attack", GetComponent<FSM>().Param.AttackTarget);
+        }
+        else if (cmd == FSMCmd.Update)
+        {
+            FSM fsm = GetComponent<FSM>();
+            GameObject target = fsm.Param.AttackTarget;
+            if (target.GetComponent<FSM>().State == FSMState.Death)
+            {
+                //target이 죽으면 idle로 변환
+                fsm.ChangeState(FSMState.Idle);
+            }
+
+            Vector2 dir = target.transform.position - transform.position;
+            if (dir.magnitude > Stats.AttackRange)
+            {
+                //target이 공격범위에서 벗어나면 idle로 전환
+                fsm.ChangeState(FSMState.Idle);
+            }
+        }
+        else if (cmd == FSMCmd.Leave)
+        {
+            StopCoroutine("Attack");
+        }
+    }
+    private void DoFSMDeath(FSMCmd cmd)
+    {
+        if (cmd == FSMCmd.Enter)
+        {
+            StopAllCoroutines();
+            GetComponent<BoxCollider2D>().enabled = false;
+            GetComponent<UserEvent>().enabled = false;
+            GetComponent<AroundDetector>().enabled = false;
+            //Play Animation Death
+            //Play Death Sound
+            Destroy(gameObject, 3.0f);
+        }
+        else if (cmd == FSMCmd.Update)
+        {
+        }
+        else if (cmd == FSMCmd.Leave)
+        {
+        }
+    }
+    private void DoFSMAppear(FSMCmd cmd)
+    {
+        if (cmd == FSMCmd.Enter)
+        {
+        }
+        else if (cmd == FSMCmd.Update)
+        {
+        }
+        else if (cmd == FSMCmd.Leave)
+        {
+        }
     }
 
     private IEnumerator MoveTo(Vector3 dest)
     {
-        StopAllCoroutines();
-        IsReadyToAttack = false;
-        DetectEnable = false;
-
-        float moveSpeed = Property.MoveSpeed;
+        float moveSpeed = Stats.MoveSpeed;
         dest.z = dest.y * 0.1f; //y좌표가 높을수록 해당 객체는 뒤쪽에 그려져야 하므로...
         Vector3 dir = dest - transform.position;
         float distance = dir.magnitude;
         dir.Normalize();
         float duration = distance / moveSpeed;
         float time = 0;
-        while(time < duration)
+        while (time < duration)
         {
             transform.position += (dir * moveSpeed * Time.deltaTime);
             time += Time.deltaTime;
             yield return null;
         }
-
-        IsReadyToAttack = true;
-        DetectEnable = true;
+        GetComponent<FSM>().ChangeState(FSMState.Idle);
     }
-
-
-    public void OnDetectEvent(Collider2D[] colliders)
+    private IEnumerator Attack(GameObject enemy)
     {
-        if(IsReadyToAttack)
+        Stats enemyStats = enemy.GetComponent<Stats>();
+        float waitSecForNextAttack = 1 / Stats.AttackSpeed;
+
+        while (true)
         {
-            foreach(Collider2D col in colliders)
+            float currentSec = Time.realtimeSinceStartup;
+            float delayedSec = currentSec - mLastAttackTime;
+            if (delayedSec >= waitSecForNextAttack)
             {
-                Property ppt = col.GetComponent<Property>();
-                if (ppt.IsEnemy(Property))
-                {
-                    HealthBar hp = colliders[0].gameObject.GetComponent<HealthBar>();
-                    if (hp != null)
-                    {
-                        StartCoroutine(Attack(hp));
-                        break;
-                    }
-                }
+                mLastAttackTime = currentSec;
+                //Play Animation Attack
+                //Play Attack Sound
+                //Create Attack Particle
+                enemyStats.GetDamaged(Stats.AttackDamage);
+                yield return new WaitForSeconds(waitSecForNextAttack);
+            }
+            else
+            {
+                yield return new WaitForSeconds(waitSecForNextAttack - delayedSec);
             }
         }
-    }
-
-    public bool DetectEnable
-    {
-        get { return GetComponent<AroundDetector>().enabled; }
-        set { GetComponent<AroundDetector>().enabled = value; }
-    }
-
-    public bool IsReadyToAttack { get; private set; } = true;
-    private IEnumerator Attack(HealthBar enemy)
-    {
-        IsReadyToAttack = false;
-        DetectEnable = false;
-        Unit enemyUnit = enemy.GetComponent<Unit>();
-
-        while(!enemyUnit.IsDeath)
-        {
-            //Play Animation Attack
-            //Play Attack Sound
-            //Create Attack Particle
-            enemy.GetDamaged(Property.AttackPoint);
-
-            yield return new WaitForSeconds(1 / Property.AttackSpeed);
-
-        }
-        IsReadyToAttack = true;
-        DetectEnable = true;
-    }
-
-
-    public bool IsDeath { get; private set; } = false;
-    public void OnDeath()
-    {
-        if (IsDeath)
-            return;
-
-        IsDeath = true;
-        StopAllCoroutines();
-        GetComponent<BoxCollider2D>().enabled = false;
-        GetComponent<UserEvent>().enabled = false;
-        DetectEnable = false;
-        //Play Animation Death
-        //Play Death Sound
-        Destroy(gameObject, 3.0f);
     }
 }

@@ -10,17 +10,17 @@ public class AroundDetector : MonoBehaviour
     public class UnityEventDetect : UnityEvent<Collider2D[]> { }
     public UnityEventDetect EventDetect = null;
 
-    private Property mProperty = null;
+    private Stats mStats = null;
 
     private void Start()
     {
-        mProperty = GetComponent<Property>();
+        mStats = GetComponent<Stats>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, mProperty.AttackRange);
+        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, mStats.AttackRange);
         if(hitColliders.Length > 1)
         {
             List<Collider2D> list = new List<Collider2D>();

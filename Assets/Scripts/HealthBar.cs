@@ -10,25 +10,18 @@ public class HealthBar : MonoBehaviour
 
     public GameObject HealthBarObject;
 
-    public Property Property { get; private set; }
-    private float mCurrentHP = 0;
+    public Stats Stats { get; private set; }
 
-    [SerializeField]
-    public UnityEvent EventDeath = null;
 
     void Start()
     {
-        Property = GetComponent<Property>();
-        mCurrentHP = Property.TotalHP;
+        Stats = GetComponent<Stats>();
         HealthBarObject = Instantiate(HealthBarObject, transform);
     }
 
     void Update()
     {
-        if (mCurrentHP <= 0)
-            EventDeath?.Invoke();
-
-        float rate = mCurrentHP / Property.TotalHP;
+        float rate = Stats.HPRate;
         UpdateHealthBar(rate);
     }
 
@@ -37,13 +30,6 @@ public class HealthBar : MonoBehaviour
         localScale.x = rate;
         HealthBarObject.transform.localPosition = offset;
         HealthBarObject.transform.GetChild(0).localScale = localScale;
-    }
-
-    public void GetDamaged(float attack)
-    {
-        mCurrentHP -= attack;
-        if (mCurrentHP < 0)
-            mCurrentHP = 0;
     }
 
 }
