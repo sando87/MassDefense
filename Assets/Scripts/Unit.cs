@@ -22,7 +22,21 @@ public class Unit : MonoBehaviour
 
     public void OnClick()
     {
-        Debug.Log("OnClick : Show GUI");
+        int ran = UnityEngine.Random.Range(0, 6);
+        Debug.Log("OnClick : " + ran);
+
+        if (ran == 0)
+            GetComponent<Animator>().Play("idle", -1, 0);
+        else if (ran == 1)
+            GetComponent<Animator>().Play("move", -1, 0);
+        else if (ran == 2)
+            GetComponent<Animator>().Play("attack_down", -1, 0);
+        else if (ran == 3)
+            GetComponent<Animator>().Play("attack_mid", -1, 0);
+        else if (ran == 4)
+            GetComponent<Animator>().Play("attack_up", -1, 0);
+        else if (ran == 5)
+            GetComponent<Animator>().Play("death", -1, 0);
     }
     public void OnDragDrop(Vector3 worldPos)
     {
@@ -65,6 +79,7 @@ public class Unit : MonoBehaviour
         {
             GetComponent<AroundDetector>().enabled = true;
             GetComponent<UserEvent>().enabled = true;
+            GetComponent<Animator>().Play("idle", -1, 0);
         }
         else if (cmd == FSMCmd.Update)
         {
@@ -78,6 +93,7 @@ public class Unit : MonoBehaviour
         if (cmd == FSMCmd.Enter)
         {
             GetComponent<AroundDetector>().enabled = false;
+            GetComponent<Animator>().Play("move", -1, 0);
             StartCoroutine("MoveTo", GetComponent<FSM>().Param.DestinationPos);
         }
         else if (cmd == FSMCmd.Update)
@@ -99,7 +115,8 @@ public class Unit : MonoBehaviour
         {
             FSM fsm = GetComponent<FSM>();
             GameObject target = fsm.Param.AttackTarget;
-            if (target.GetComponent<FSM>().State == FSMState.Death)
+            FSM targetFSM = target.GetComponent<FSM>();
+            if (targetFSM != null && targetFSM.State == FSMState.Death)
             {
                 //target이 죽으면 idle로 변환
                 fsm.ChangeState(FSMState.Idle);
@@ -122,6 +139,7 @@ public class Unit : MonoBehaviour
         if (cmd == FSMCmd.Enter)
         {
             StopAllCoroutines();
+            GetComponent<Animator>().Play("death", -1, 0);
             GetComponent<BoxCollider2D>().enabled = false;
             GetComponent<UserEvent>().enabled = false;
             GetComponent<AroundDetector>().enabled = false;
@@ -177,6 +195,7 @@ public class Unit : MonoBehaviour
             float delayedSec = currentSec - mLastAttackTime;
             if (delayedSec >= waitSecForNextAttack)
             {
+                GetComponent<Animator>().Play("attack_down", -1, 0);
                 mLastAttackTime = currentSec;
                 //Play Animation Attack
                 //Play Attack Sound

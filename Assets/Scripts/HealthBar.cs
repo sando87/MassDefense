@@ -5,10 +5,18 @@ using UnityEngine.Events;
 
 public class HealthBar : MonoBehaviour
 {
-    private Vector3 offset = new Vector3(0, 0.5f, 0);
-    private Vector3 localScale = new Vector3(1, 1, 1);
+    public enum HealthBarSize { Small, Medium, Big }
 
-    public GameObject HealthBarObject;
+    public GameObject HealthBarPrefab;
+    public HealthBarSize BarSize;
+
+    private SpriteRenderer UnitSpriteRenderer;
+    private SpriteRenderer BarSpriteRenderer;
+    private GameObject HealthBarBG;
+    private GameObject HealthBarGreen;
+    private GameObject HealthBarRed;
+    private Vector3 localScale = new Vector3(1, 1, 1);
+    private Vector3 offset = Vector3.zero;
 
     public Stats Stats { get; private set; }
 
@@ -16,20 +24,32 @@ public class HealthBar : MonoBehaviour
     void Start()
     {
         Stats = GetComponent<Stats>();
-        HealthBarObject = Instantiate(HealthBarObject, transform);
+        HealthBarBG = Instantiate(HealthBarPrefab, transform);
+        HealthBarGreen = HealthBarBG.transform.Find("Green").gameObject;
+        HealthBarRed = HealthBarBG.transform.Find("Red").gameObject;
+
+        UnitSpriteRenderer = GetComponent<SpriteRenderer>();
+        BarSpriteRenderer = HealthBarBG.GetComponent<SpriteRenderer>();
+
+        HealthBarGreen.SetActive(Stats.PlayerType == PlayerType.Human);
+        HealthBarRed.SetActive(Stats.PlayerType == PlayerType.Computer);
+        float size = BarSize == HealthBarSize.Small ? 0.2f : (BarSize == HealthBarSize.Medium ? 0.35f : 0.7f);
+        HealthBarBG.transform.localScale = new Vector3(size, size, 1);
     }
 
     void Update()
     {
-        float rate = Stats.HPRate;
-        UpdateHealthBar(rate);
+        UpdateHealthBar();
     }
 
-    void UpdateHealthBar(float rate)
+    void UpdateHealthBar()
     {
-        localScale.x = rate;
-        HealthBarObject.transform.localPosition = offset;
-        HealthBarObject.transform.GetChild(0).localScale = localScale;
+        offset.y = (UnitSpriteRenderer.size.y + BarSpriteRenderer.size.y * HealthBarBG.transform.localScale.y) * 0.5f;
+        localScale.x = Stats.HPRate;
+
+        HealthBarBG.transform.localPosition = offset;
+        HealthBarGreen.transform.localScale = localScale;
+        HealthBarRed.transform.localScale = localScale;
     }
 
 }
