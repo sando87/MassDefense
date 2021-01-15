@@ -10,7 +10,7 @@ public class FSM : MonoBehaviour
     public class UnityEventFSM : UnityEvent<FSMCmd, FSMState> { }
     public UnityEventFSM EventFSM = null;
 
-    public FSMInfo Param { get; private set; }
+    public FSMInfo Param { get; private set; } = new FSMInfo();
     public FSMState State { get; private set; } = FSMState.Idle;
     public void ChangeState(FSMState state)
     {
@@ -25,7 +25,6 @@ public class FSM : MonoBehaviour
 
     private void Start()
     {
-        Param = new FSMInfo();
         EventFSM?.Invoke(FSMCmd.Enter, State);
     }
 

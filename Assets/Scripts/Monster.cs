@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Unit : MonoBehaviour
+public class Monster : MonoBehaviour
 {
     private float mLastAttackTime = 0;
     public Skill BasicSkillPrefab;
@@ -23,32 +23,6 @@ public class Unit : MonoBehaviour
         
     }
 
-    public void OnClick()
-    {
-        int ran = UnityEngine.Random.Range(0, 6);
-        Debug.Log("OnClick : " + ran);
-
-        if (ran == 0)
-            GetComponent<Animator>().Play("idle", -1, 0);
-        else if (ran == 1)
-            GetComponent<Animator>().Play("move", -1, 0);
-        else if (ran == 2)
-            GetComponent<Animator>().Play("attack_down", -1, 0);
-        else if (ran == 3)
-            GetComponent<Animator>().Play("attack_mid", -1, 0);
-        else if (ran == 4)
-            GetComponent<Animator>().Play("attack_up", -1, 0);
-        else if (ran == 5)
-            GetComponent<Animator>().Play("death", -1, 0);
-    }
-    public void OnDragDrop(Vector3 worldPos)
-    {
-        //Dropdown 지점으로 유닛 이동
-        FSM fsm = GetComponent<FSM>();
-        fsm.Param.DestinationPos = worldPos;
-        fsm.ChangeState(FSMState.Move);
-    }
-
     public void OnDetectEvent(Collider2D[] colliders)
     {
         //적으로 감지되는 유닛에게 공격모드로 전환
@@ -59,7 +33,10 @@ public class Unit : MonoBehaviour
             {
                 FSM fsm = GetComponent<FSM>();
                 fsm.Param.AttackTarget = col.gameObject;
-                fsm.ChangeState(FSMState.Attack);
+                if(fsm.State == FSMState.Idle)
+                    fsm.ChangeState(FSMState.Move);
+                else if(fsm.State == FSMState.Move)
+                    fsm.ChangeState(FSMState.Attack);
                 break;
             }
         }
@@ -88,8 +65,8 @@ public class Unit : MonoBehaviour
     {
         if (cmd == FSMCmd.Enter)
         {
+            GetComponent<AroundDetector>().DetectRange = Stats.SightRange;
             GetComponent<AroundDetector>().enabled = true;
-            GetComponent<UserEvent>().enabled = true;
             GetComponent<Animator>().Play("idle", -1, 0);
         }
         else if (cmd == FSMCmd.Update)
@@ -103,12 +80,21 @@ public class Unit : MonoBehaviour
     {
         if (cmd == FSMCmd.Enter)
         {
-            GetComponent<AroundDetector>().enabled = false;
+            GetComponent<AroundDetector>().DetectRange = Stats.AttackRange;
+            GetComponent<AroundDetector>().enabled = true;
             GetComponent<Animator>().Play("move", -1, 0);
             StartCoroutine("MoveTo", GetComponent<FSM>().Param.DestinationPos);
         }
         else if (cmd == FSMCmd.Update)
         {
+            //매 프래임마다 공격대상이 도망갔는지 판단
+            FSM fsm = GetComponent<FSM>();
+            GameObject target = fsm.Param.AttackTarget;
+            Vector2 dir = target.transform.position - transform.position;
+            if (dir.magnitude > Stats.SightRange)
+            {
+                fsm.ChangeState(FSMState.Idle);
+            }
         }
         else if (cmd == FSMCmd.Leave)
         {
@@ -138,7 +124,7 @@ public class Unit : MonoBehaviour
             if (dir.magnitude > Stats.AttackRange)
             {
                 //target이 공격범위에서 벗어나면 idle로 전환
-                fsm.ChangeState(FSMState.Idle);
+                fsm.ChangeState(FSMState.Move);
             }
         }
         else if (cmd == FSMCmd.Leave)
@@ -153,7 +139,6 @@ public class Unit : MonoBehaviour
             StopAllCoroutines();
             GetComponent<Animator>().Play("death", -1, 0);
             GetComponent<BoxCollider2D>().enabled = false;
-            GetComponent<UserEvent>().enabled = false;
             GetComponent<AroundDetector>().enabled = false;
             //Play Animation Death
             //Play Death Sound
@@ -233,6 +218,6 @@ public class Unit : MonoBehaviour
         skillObj.Target = GetComponent<FSM>().Param.AttackTarget;
         skillObj.StartPos = transform.position;
         skillObj.EndPos = skillObj.Target.transform.position;
-        skillObj.Damage = GetComponent<Stats>().AttackDamage;
+        skillObj.Damage = Stats.AttackDamage;
     }
 }
