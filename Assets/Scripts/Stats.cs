@@ -8,8 +8,8 @@ public class Stats : MonoBehaviour
     public float AttackDamage = 5;
     public float AttackSpeed = 1;
     public float MoveSpeed = 2;
-    public float AttackRange = 1;
-    public float SightRange = 3;
+    public float DetectRange = 1;
+    public float AttackRange = 0.3f;
     public float CharacterHeight = 1;
     public PlayerType PlayerType = PlayerType.Neutral;
 
@@ -17,5 +17,4 @@ public class Stats : MonoBehaviour
     {
         return opp.PlayerType != PlayerType.Neutral && opp.PlayerType != PlayerType;
     }
-
 }

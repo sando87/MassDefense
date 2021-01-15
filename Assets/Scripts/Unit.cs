@@ -135,7 +135,7 @@ public class Unit : MonoBehaviour
             }
 
             Vector2 dir = target.transform.position - transform.position;
-            if (dir.magnitude > Stats.AttackRange)
+            if (dir.magnitude > Stats.DetectRange)
             {
                 //target이 공격범위에서 벗어나면 idle로 전환
                 fsm.ChangeState(FSMState.Idle);
@@ -200,7 +200,6 @@ public class Unit : MonoBehaviour
     private IEnumerator Attack(GameObject enemy)
     {
         //공격 속도에 따라 반복적으로 공격을 수행하는 동작
-        HealthBar enemyHP = enemy.GetComponent<HealthBar>();
         float waitSecForNextAttack = 1 / Stats.AttackSpeed;
 
         while (true)
@@ -211,10 +210,7 @@ public class Unit : MonoBehaviour
             {
                 GetComponent<Animator>().Play("attack_down", -1, 0);
                 mLastAttackTime = currentSec;
-                //Play Animation Attack
                 //Play Attack Sound
-                //Create Attack Particle
-                enemyHP.Reduce(Stats.AttackDamage);
                 yield return new WaitForSeconds(waitSecForNextAttack);
             }
             else

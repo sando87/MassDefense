@@ -33,7 +33,8 @@ public class Monster : MonoBehaviour
             {
                 FSM fsm = GetComponent<FSM>();
                 fsm.Param.AttackTarget = col.gameObject;
-                if(fsm.State == FSMState.Idle)
+                fsm.Param.DestinationPos = col.transform.position;
+                if (fsm.State == FSMState.Idle)
                     fsm.ChangeState(FSMState.Move);
                 else if(fsm.State == FSMState.Move)
                     fsm.ChangeState(FSMState.Attack);
@@ -65,7 +66,6 @@ public class Monster : MonoBehaviour
     {
         if (cmd == FSMCmd.Enter)
         {
-            GetComponent<AroundDetector>().DetectRange = Stats.SightRange;
             GetComponent<AroundDetector>().enabled = true;
             GetComponent<Animator>().Play("idle", -1, 0);
         }
@@ -80,20 +80,24 @@ public class Monster : MonoBehaviour
     {
         if (cmd == FSMCmd.Enter)
         {
-            GetComponent<AroundDetector>().DetectRange = Stats.AttackRange;
-            GetComponent<AroundDetector>().enabled = true;
+            GetComponent<AroundDetector>().enabled = false;
             GetComponent<Animator>().Play("move", -1, 0);
             StartCoroutine("MoveTo", GetComponent<FSM>().Param.DestinationPos);
         }
         else if (cmd == FSMCmd.Update)
         {
-            //매 프래임마다 공격대상이 도망갔는지 판단
+            //매 프래임마다 공격대상이 죽었는지,근접공격에 들어오는지, 도망갔는지 판단
             FSM fsm = GetComponent<FSM>();
             GameObject target = fsm.Param.AttackTarget;
-            Vector2 dir = target.transform.position - transform.position;
-            if (dir.magnitude > Stats.SightRange)
+            if(target == null || target.GetComponent<FSM>().State == FSMState.Death)
             {
                 fsm.ChangeState(FSMState.Idle);
+            }
+
+            Vector2 dir = target.transform.position - transform.position;
+            if (dir.magnitude < Stats.AttackRange)
+            {
+                fsm.ChangeState(FSMState.Attack);
             }
         }
         else if (cmd == FSMCmd.Leave)
@@ -185,7 +189,6 @@ public class Monster : MonoBehaviour
     private IEnumerator Attack(GameObject enemy)
     {
         //공격 속도에 따라 반복적으로 공격을 수행하는 동작
-        HealthBar enemyHP = enemy.GetComponent<HealthBar>();
         float waitSecForNextAttack = 1 / Stats.AttackSpeed;
 
         while (true)
@@ -196,10 +199,7 @@ public class Monster : MonoBehaviour
             {
                 GetComponent<Animator>().Play("attack_down", -1, 0);
                 mLastAttackTime = currentSec;
-                //Play Animation Attack
                 //Play Attack Sound
-                //Create Attack Particle
-                enemyHP.Reduce(Stats.AttackDamage);
                 yield return new WaitForSeconds(waitSecForNextAttack);
             }
             else

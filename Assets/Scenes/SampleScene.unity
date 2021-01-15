@@ -178,7 +178,9 @@ GameObject:
   - component: {fileID: 205458454}
   - component: {fileID: 205458453}
   - component: {fileID: 205458458}
+  - component: {fileID: 205458459}
   - component: {fileID: 205458457}
+  - component: {fileID: 205458456}
   m_Layer: 0
   m_Name: enemy
   m_TagString: Untagged
@@ -262,11 +264,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 893c6ed795b7c074c828f31fc98ad9e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TotalHP: 100
-  AttackDamage: 5
+  TotalHP: 70
+  AttackDamage: 3
   AttackSpeed: 1
-  MoveSpeed: 2
-  AttackRange: 1
+  MoveSpeed: 0.5
+  DetectRange: 0.2
+  AttackRange: 0.1
+  CharacterHeight: 0.5
   PlayerType: 2
 --- !u!114 &205458454
 MonoBehaviour:
@@ -280,6 +284,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d0ac1b5ad0087bf479547261195082fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EventHeathZero:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 205458459}
+        m_MethodName: OnHealthBarZero
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   HealthBarPrefab: {fileID: 4554420254993436834, guid: def210ca37f9d174ca545000174cc62b,
     type: 3}
   BarSize: 1
@@ -309,6 +327,25 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.66, y: 0.64}
   m_EdgeRadius: 0
+--- !u!95 &205458456
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 205458450}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 1414720cbfdf1b44b944f922524c9cdf, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!114 &205458457
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -318,9 +355,23 @@ MonoBehaviour:
   m_GameObject: {fileID: 205458450}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da60791523260424c8e6436f1ef4da02, type: 3}
+  m_Script: {fileID: 11500000, guid: 1a3b665ce29e6ed45842fe00f63615dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EventDetect:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 205458459}
+        m_MethodName: OnDetectEvent
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &205458458
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -336,7 +387,7 @@ MonoBehaviour:
   EventFSM:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 205458457}
+      - m_Target: {fileID: 205458459}
         m_MethodName: OnFSM
         m_Mode: 0
         m_Arguments:
@@ -347,6 +398,20 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &205458459
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 205458450}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5cf13bfcee3576f4392578201b95601e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  BasicSkillPrefab: {fileID: 6579832619586057518, guid: 467e4a9acea806649bfdd1b38d14ecf7,
+    type: 3}
 --- !u!1 &370765884
 GameObject:
   m_ObjectHideFlags: 0
@@ -464,6 +529,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da60791523260424c8e6436f1ef4da02, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  BasicSkillPrefab: {fileID: 7385714125574496799, guid: 7e902619536de334b92866f1d9f40fd2,
+    type: 3}
 --- !u!212 &370765889
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -556,7 +623,9 @@ MonoBehaviour:
   AttackDamage: 5
   AttackSpeed: 1
   MoveSpeed: 2
-  AttackRange: 1
+  DetectRange: 2
+  AttackRange: 2
+  CharacterHeight: 0.5
   PlayerType: 1
 --- !u!61 &370765892
 BoxCollider2D:
@@ -596,6 +665,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d0ac1b5ad0087bf479547261195082fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EventHeathZero:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 370765888}
+        m_MethodName: OnHealthBarZero
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   HealthBarPrefab: {fileID: 4554420254993436834, guid: def210ca37f9d174ca545000174cc62b,
     type: 3}
   BarSize: 1

@@ -39,7 +39,7 @@ public class HealthBar : MonoBehaviour
         float size = BarSize == HealthBarSize.Small ? 0.2f : (BarSize == HealthBarSize.Medium ? 0.35f : 0.7f);
         HealthBarBG.transform.localScale = new Vector3(size, size, 1);
 
-        enabled = false;
+        ShowHealthBar(false);
     }
 
     void Update()
@@ -57,13 +57,19 @@ public class HealthBar : MonoBehaviour
         HealthBarRed.transform.localScale = localScale;
     }
 
+    void ShowHealthBar(bool show)
+    {
+        HealthBarBG.SetActive(show);
+        enabled = show;
+    }
+
     public void Reduce(float health)
     {
         if (CurrentHP <= 0)
             return;
 
         CurrentHP -= health;
-        enabled = true;
+        ShowHealthBar(true);
         StartCoroutine("HideBar");
         if (CurrentHP <= 0)
         {
@@ -75,7 +81,7 @@ public class HealthBar : MonoBehaviour
     public void Increase(float health)
     {
         CurrentHP += health;
-        enabled = true;
+        ShowHealthBar(true);
         StartCoroutine("HideBar");
         if (CurrentHP >= Stats.TotalHP)
             CurrentHP = Stats.TotalHP;
@@ -84,7 +90,7 @@ public class HealthBar : MonoBehaviour
     IEnumerator HideBar()
     {
         yield return new WaitForSeconds(SystemConfig.HealthBarShowTimeSec);
-        enabled = false;
+        ShowHealthBar(false);
     }
 
 }

@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class Skill : MonoBehaviour
 {
-    public Vector3 StartPos = Vector3.zero;
-    public Vector3 EndPos = Vector3.zero;
-    public GameObject Target = null;
-    public GameObject Owner = null;
-    public float Damage = 0;
+    public Vector3 StartPos { get; set; }
+    public Vector3 EndPos { get; set; }
+    public GameObject Target { get; set; }
+    public GameObject Owner { get; set; }
+    public float Damage { get; set; }
 }
