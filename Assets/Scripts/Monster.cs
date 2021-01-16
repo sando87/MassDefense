@@ -197,7 +197,7 @@ public class Monster : MonoBehaviour
             float delayedSec = currentSec - mLastAttackTime;
             if (delayedSec >= waitSecForNextAttack)
             {
-                GetComponent<Animator>().Play("attack_down", -1, 0);
+                GetComponent<Animator>().Play("attack", -1, 0);
                 mLastAttackTime = currentSec;
                 //Play Attack Sound
                 yield return new WaitForSeconds(waitSecForNextAttack);
