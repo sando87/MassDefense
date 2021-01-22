@@ -81,6 +81,7 @@ public class Monster : MonoBehaviour
         if (cmd == FSMCmd.Enter)
         {
             GetComponent<AroundDetector>().enabled = false;
+            LookAt(GetComponent<FSM>().Param.DestinationPos);
             GetComponent<Animator>().Play("move", -1, 0);
             StartCoroutine("MoveTo", GetComponent<FSM>().Param.DestinationPos);
         }
@@ -172,8 +173,8 @@ public class Monster : MonoBehaviour
     {
         //dest지점으로 유닛 Smoothly 이동
         float moveSpeed = Stats.MoveSpeed;
-        dest.z = dest.y * 0.1f; //y좌표가 높을수록 해당 객체는 뒤쪽에 그려져야 하므로...
         Vector3 dir = dest - transform.position;
+        dir.z = 0;
         float distance = dir.magnitude;
         dir.Normalize();
         float duration = distance / moveSpeed;
@@ -197,6 +198,7 @@ public class Monster : MonoBehaviour
             float delayedSec = currentSec - mLastAttackTime;
             if (delayedSec >= waitSecForNextAttack)
             {
+                LookAt(enemy.transform.position);
                 GetComponent<Animator>().Play("attack", -1, 0);
                 mLastAttackTime = currentSec;
                 //Play Attack Sound
@@ -207,6 +209,14 @@ public class Monster : MonoBehaviour
                 yield return new WaitForSeconds(waitSecForNextAttack - delayedSec);
             }
         }
+    }
+
+    private void LookAt(Vector3 pos)
+    {
+        if (pos.x > transform.position.x)
+            transform.localScale = new Vector3(1, 1, 1);
+        else
+            transform.localScale = new Vector3(-1, 1, 1);
     }
 
 

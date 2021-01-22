@@ -23,7 +23,7 @@ public class MineralUnitPanel : MonoBehaviour
     private void Start()
     {
         MineralBar.fillAmount = 0;
-        MineralText.text = "0";
+        MineralText.text = "0/" + SystemConfig.MaxMineral.ToString();
         UnitText.text = "0/" + SystemConfig.MaxUnitCount.ToString();
 
         StartCoroutine(UpdatePanelEverySec());
@@ -34,7 +34,7 @@ public class MineralUnitPanel : MonoBehaviour
         SystemInGame sysInst = SystemInGame.Inst;
         float rate = sysInst.CurrrentMineral / (float)SystemConfig.MaxMineral;
         MineralBar.fillAmount = rate;
-        MineralText.text = sysInst.CurrrentMineral.ToString();
+        MineralText.text = sysInst.CurrrentMineral.ToString() + "/" + SystemConfig.MaxMineral.ToString();
         string unitText = sysInst.CurrrentUnitCount.ToString() + "/" + SystemConfig.MaxUnitCount.ToString();
         UnitText.text = unitText;
     }

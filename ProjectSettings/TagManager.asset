@@ -13,13 +13,13 @@ TagManager:
   - UI
   - 
   - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - UnderOnTheFloor
+  - Floor
+  - LyingOnTheFloor
+  - StandingOnTheFloor
+  - FloatingOnTheFloor
+  - Particles
+  - InGameUI
   - 
   - 
   - 
@@ -38,9 +38,30 @@ TagManager:
   - 
   - 
   m_SortingLayers:
-  - name: Default
-    uniqueID: 0
+  - name: UnderOnTheFloor
+    uniqueID: 2290413829
+    locked: 0
+  - name: Floor
+    uniqueID: 985470461
+    locked: 0
+  - name: LyingOnTheFloor
+    uniqueID: 1300770129
+    locked: 0
+  - name: StandingOnTheFloor
+    uniqueID: 3946545891
+    locked: 0
+  - name: FloatingOnTheFloor
+    uniqueID: 3317164241
+    locked: 0
+  - name: Particles
+    uniqueID: 799764069
+    locked: 0
+  - name: InGameUI
+    uniqueID: 3148200271
     locked: 0
   - name: UI
     uniqueID: 2177784903
+    locked: 0
+  - name: Default
+    uniqueID: 0
     locked: 0

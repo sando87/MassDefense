@@ -103,9 +103,11 @@ public class Unit : MonoBehaviour
     {
         if (cmd == FSMCmd.Enter)
         {
+            Vector3 destPos = GetComponent<FSM>().Param.DestinationPos;
             GetComponent<AroundDetector>().enabled = false;
+            LookAt(destPos);
             GetComponent<Animator>().Play("move", -1, 0);
-            StartCoroutine("MoveTo", GetComponent<FSM>().Param.DestinationPos);
+            StartCoroutine("MoveTo", destPos);
         }
         else if (cmd == FSMCmd.Update)
         {
@@ -119,8 +121,9 @@ public class Unit : MonoBehaviour
     {
         if (cmd == FSMCmd.Enter)
         {
+            GameObject target = GetComponent<FSM>().Param.AttackTarget;
             GetComponent<AroundDetector>().enabled = false;
-            StartCoroutine("Attack", GetComponent<FSM>().Param.AttackTarget);
+            StartCoroutine("Attack", target);
         }
         else if (cmd == FSMCmd.Update)
         {
@@ -183,8 +186,8 @@ public class Unit : MonoBehaviour
     {
         //dest지점으로 유닛 Smoothly 이동
         float moveSpeed = Stats.MoveSpeed;
-        dest.z = dest.y * 0.1f; //y좌표가 높을수록 해당 객체는 뒤쪽에 그려져야 하므로...
         Vector3 dir = dest - transform.position;
+        dir.z = 0;
         float distance = dir.magnitude;
         dir.Normalize();
         float duration = distance / moveSpeed;
@@ -201,14 +204,19 @@ public class Unit : MonoBehaviour
     {
         //공격 속도에 따라 반복적으로 공격을 수행하는 동작
         float waitSecForNextAttack = 1 / Stats.AttackSpeed;
+        FSM enemyFSM = enemy.GetComponent<FSM>();
 
         while (true)
         {
+            if (enemyFSM == null || enemyFSM.State == FSMState.Death)
+                break;
+
             float currentSec = Time.realtimeSinceStartup;
             float delayedSec = currentSec - mLastAttackTime;
             if (delayedSec >= waitSecForNextAttack)
             {
-                GetComponent<Animator>().Play("attack_down", -1, 0);
+                LookAt(enemy.transform.position);
+                PlayAttackAnimAimmingTarget(enemy.transform.position);
                 mLastAttackTime = currentSec;
                 //Play Attack Sound
                 yield return new WaitForSeconds(waitSecForNextAttack);
@@ -220,15 +228,40 @@ public class Unit : MonoBehaviour
         }
     }
 
+    private void LookAt(Vector3 pos)
+    {
+        if (pos.x > transform.position.x)
+            transform.localScale = new Vector3(1, 1, 1);
+        else
+            transform.localScale = new Vector3(-1, 1, 1);
+    }
+    private void PlayAttackAnimAimmingTarget(Vector3 pos)
+    {
+        //y축 기준으로 3등분하여 60도 이하면 up방향 애님, 120도 이하면 mid방향 애님, 그 외 down방향 애님 재생
+        Vector2 refDir = new Vector2(0, 1);
+        Vector2 dir = pos - transform.position;
+        dir.Normalize();
+        float dot = Vector2.Dot(refDir, dir);
+        float deg = Mathf.Acos(dot) * Mathf.Rad2Deg;
+        if (deg < 60)
+            GetComponent<Animator>().Play("attack_up", -1, 0);
+        else if(deg < 120)
+            GetComponent<Animator>().Play("attack_mid", -1, 0);
+        else
+            GetComponent<Animator>().Play("attack_down", -1, 0);
+    }
+
 
     //공격모션 애니메이션 중 실제 유효한 모션에 호출되는 함수
     public void OnAnimFired(int sequence)
     {
+        float ranOffX = UnityEngine.Random.Range(-0.1f, 0.1f);
+        float ranOffY = UnityEngine.Random.Range(-0.1f, 0.1f);
         Skill skillObj = Instantiate<Skill>(BasicSkillPrefab);
         skillObj.Owner = gameObject;
         skillObj.Target = GetComponent<FSM>().Param.AttackTarget;
         skillObj.StartPos = transform.position;
-        skillObj.EndPos = skillObj.Target.transform.position;
+        skillObj.EndPos = skillObj.Target.transform.position + new Vector3(ranOffX, 0.2f + ranOffY, 0);
         skillObj.Damage = GetComponent<Stats>().AttackDamage;
     }
 }

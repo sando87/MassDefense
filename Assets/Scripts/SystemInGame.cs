@@ -10,7 +10,7 @@ public class SystemInGame : MonoBehaviour
         get
         {
             if (mInstacne == null)
-                mInstacne = GameObject.Find("SystemInGame").GetComponent<SystemInGame>();
+                mInstacne = GameObject.Find("System/SystemInGame").GetComponent<SystemInGame>();
             return mInstacne;
         }
     }
